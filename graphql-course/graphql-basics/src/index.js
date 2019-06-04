@@ -1,10 +1,56 @@
-import myCurrentLocation, { getGreeting, message, name } from "./myModule";
-import add, { subtract } from "./math";
+import { GraphQLServer } from "graphql-yoga";
 
-console.log(message);
-console.log(name);
-console.log(myCurrentLocation);
-console.log(getGreeting("Jessica"));
+// 5 Scalar Types = String, Boolean, Int, Float, ID
 
-console.log(add(5, 3));
-console.log(subtract(999, 333));
+// Type definitions (schema)
+const typeDefs = `
+    type Query {
+        me: User!
+        post: Post!
+    }
+
+    type User {
+        id: ID!
+        name: String!
+        email: String!
+        age: Int
+    }
+
+    type Post {
+        id: ID!
+        title: String!
+        body: String!
+        published: Boolean!
+    }
+`;
+
+// Resolvers
+const resolvers = {
+  Query: {
+    me() {
+      return {
+        id: "123098",
+        name: "Mike",
+        email: "mike@example.com",
+        age: 28
+      };
+    },
+    post() {
+      return {
+        id: "987qwerty",
+        title: "Where is the gym?",
+        body: "10 gyms near Calgary centre",
+        published: true
+      };
+    }
+  }
+};
+
+const server = new GraphQLServer({
+  typeDefs,
+  resolvers
+});
+
+server.start(() => {
+  console.log("This server is up");
+});
