@@ -28,19 +28,22 @@ const posts = [
     id: 100,
     title: "How to train your dog",
     body: "Here are 10 things to teach your dog",
-    published: true
+    published: true,
+    author: "1"
   },
   {
     id: 155,
     title: "Why you should not eat sugar",
     body: "5 reasons sugar is bad for you",
-    published: false
+    published: false,
+    author: "1"
   },
   {
     id: 366,
     title: "Summertime in Calgary",
     body: "Things to do in Calgary during the hot months",
-    published: true
+    published: true,
+    author: "2"
   }
 ];
 
@@ -58,6 +61,7 @@ const typeDefs = `
         name: String!
         email: String!
         age: Int
+        posts: [Post!]!
     }
 
     type Post {
@@ -65,6 +69,7 @@ const typeDefs = `
         title: String!
         body: String!
         published: Boolean!
+        author: User!
     }
 `;
 
@@ -107,6 +112,20 @@ const resolvers = {
         body: "10 gyms near Calgary centre",
         published: true
       };
+    }
+  },
+  Post: {
+    author(parent, args, ctx, info) {
+      return users.find(user => {
+        return user.id === parent.author;
+      });
+    }
+  },
+  User: {
+    posts(parent, args, ctx, info) {
+      return posts.filter(post => {
+        return post.author === parent.id;
+      });
     }
   }
 };
