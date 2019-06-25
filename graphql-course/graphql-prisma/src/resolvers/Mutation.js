@@ -1,10 +1,49 @@
-import uuidv4 from "uuid/v4";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import getUserId from "../utils/getUserId";
 
 const Mutation = {
-  createUser(parent, args, { prisma }, info) {
-    return prisma.mutation.createUser({ data: args.data }, info);
+  async createUser(parent, args, { prisma }, info) {
+    if (args.data.password.length < 8) {
+      throw new Error("Password must be 8 characters or longer");
+    }
+
+    const password = await bcrypt.hash(args.data.password, 10);
+    const user = await prisma.mutation.createUser({
+      data: {
+        ...args.data,
+        password
+      }
+    });
+
+    return {
+      user,
+      token: jwt.sign({ userId: user.id }, "thisisasecret")
+    };
   },
-  deleteUser(parent, args, { prisma }, info) {
+  async loginUser(parent, args, { prisma }, info) {
+    const user = await prisma.query.user({
+      where: {
+        email: args.data.email
+      }
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const isMatch = await bcrypt.compare(args.data.password, user.password);
+
+    if (!isMatch) {
+      throw new Error("Incorrect password");
+    }
+
+    return {
+      user,
+      token: jwt.sign({ userId: user.id }, "thisisasecret")
+    };
+  },
+  async deleteUser(parent, args, { prisma }, info) {
     return prisma.mutation.deleteUser(
       {
         where: {
@@ -14,7 +53,7 @@ const Mutation = {
       info
     );
   },
-  updateUser(parent, args, { prisma }, info) {
+  async updateUser(parent, args, { prisma }, info) {
     return prisma.mutation.updateUser(
       {
         where: {
@@ -25,7 +64,9 @@ const Mutation = {
       info
     );
   },
-  createPost(parent, args, { prisma }, info) {
+  createPost(parent, args, { prisma, request }, info) {
+    const userId = getUserId(request);
+
     return prisma.mutation.createPost(
       {
         data: {
@@ -34,7 +75,7 @@ const Mutation = {
           published: args.data.published,
           author: {
             connect: {
-              id: args.data.author
+              id: userId
             }
           }
         }
