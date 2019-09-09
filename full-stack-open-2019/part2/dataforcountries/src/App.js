@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+import Country from "./components/Country";
+
 const App = () => {
   const [countries, setCountries] = useState([]);
   const [search, setSearch] = useState("");
@@ -24,27 +26,15 @@ const App = () => {
       )
       .map((country, idx, arr) => {
         if (arr.length === 1) {
-          return (
-            <li key={country.name}>
-              <h1>{country.name}</h1>
-              <p>capital {country.capital}</p>
-              <p>population {country.population}</p>
-              <h2>languages</h2>
-              <ul>
-                {country.languages.map(language => (
-                  <li key={language.name}>{language.name}</li>
-                ))}
-              </ul>
-              <img
-                src={country.flag}
-                alt="flag"
-                style={{ maxWidth: "150px", marginTop: "30px" }}
-              />
-            </li>
-          );
+          return <Country country={country} />;
         }
 
-        return <li key={country.name}>{country.name}</li>;
+        return (
+          <li key={country.name}>
+            {country.name}{" "}
+            <button onClick={() => setSearch(country.name)}>show</button>
+          </li>
+        );
       });
 
     if (countriesToRender.length > 10) {
