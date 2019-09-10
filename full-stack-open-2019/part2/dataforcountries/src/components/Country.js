@@ -32,7 +32,7 @@ const Country = ({
     }
     return <div></div>;
   };
-  console.log(weather);
+
   return (
     <li key={name}>
       <h1>{name}</h1>

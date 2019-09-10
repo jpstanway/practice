@@ -1,7 +1,12 @@
 import React from "react";
 
-const Persons = ({ renderPersons }) => (
-  <ul style={{ listStyle: "none" }}>{renderPersons()}</ul>
-);
+const Persons = ({ person: { id, name, number }, handleDeletePerson }) => {
+  return (
+    <li>
+      {name} {number}{" "}
+      <button onClick={() => handleDeletePerson(id, name)}>delete</button>
+    </li>
+  );
+};
 
 export default Persons;

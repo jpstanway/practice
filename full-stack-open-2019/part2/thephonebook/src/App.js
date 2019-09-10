@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
+
+import personService from "./services/persons";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -12,9 +13,7 @@ const App = () => {
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then(response => setPersons(response.data));
+    personService.getAll().then(response => setPersons(response.data));
   }, []);
 
   const addPerson = event => {
@@ -23,18 +22,46 @@ const App = () => {
     const checkPersons = persons.find(person => person.name === newName);
 
     if (checkPersons) {
-      alert(`${newName} is already added to phonebook`);
+      if (
+        window.confirm(
+          `${newName} is already added to phonebook. Replace the old number with a new one?`
+        )
+      ) {
+        const changedPerson = { ...checkPersons, number: newNumber };
+
+        personService
+          .update(checkPersons.id, changedPerson)
+          .then(response =>
+            setPersons(
+              persons.map(person =>
+                person.id !== checkPersons.id ? person : response.data
+              )
+            )
+          );
+      }
     } else {
       const newPerson = {
         name: newName,
         number: newNumber
       };
 
-      setPersons(persons.concat(newPerson));
+      personService
+        .create(newPerson)
+        .then(response => setPersons(persons.concat(response.data)));
     }
 
     setNewName("");
     setNewNumber("");
+  };
+
+  const handleDeletePerson = (id, name) => {
+    if (window.confirm(`Delete ${name}?`)) {
+      personService
+        .deletePerson(id)
+        .then(response =>
+          setPersons(persons.filter(person => person.id !== id))
+        );
+    }
   };
 
   const handleNewNameChange = event => {
@@ -55,9 +82,11 @@ const App = () => {
         person.name.toLowerCase().includes(filter.toLowerCase())
       )
       .map(person => (
-        <li key={person.name}>
-          {person.name} {person.number}
-        </li>
+        <Persons
+          key={person.id}
+          person={person}
+          handleDeletePerson={handleDeletePerson}
+        />
       ));
   };
 
@@ -74,7 +103,7 @@ const App = () => {
         addPerson={addPerson}
       />
       <h2>Numbers</h2>
-      <Persons renderPersons={renderPersons} />
+      <ul style={{ listStyle: "none" }}>{renderPersons()}</ul>
     </div>
   );
 };
