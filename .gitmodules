@@ -1,3 +1,6 @@
 [submodule "full-stack-open-2019/full-stack-open-2019/course/part2-notes"]
 	path = full-stack-open-2019/full-stack-open-2019/course/part2-notes
 	url = https://github.com/jpstanway/part2-notes.git
+[submodule "full-stack-open-2019/course/part2-notes"]
+	path = full-stack-open-2019/course/part2-notes
+	url = https://github.com/jpstanway/part2-notes.git
