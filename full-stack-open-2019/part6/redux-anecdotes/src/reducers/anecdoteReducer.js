@@ -31,6 +31,8 @@ const reducer = (state = initialState, action) => {
         }
         return anecdote;
       });
+    case "NEW_ANECDOTE":
+      return [...state, asObject(action.payload)];
     default:
       return state;
   }
