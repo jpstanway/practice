@@ -38,4 +38,19 @@ const reducer = (state = initialState, action) => {
   }
 };
 
+// action creators
+export const vote = id => {
+  return {
+    type: "VOTE",
+    payload: id
+  };
+};
+
+export const createAnecdote = content => {
+  return {
+    type: "NEW_ANECDOTE",
+    payload: content
+  };
+};
+
 export default reducer;
