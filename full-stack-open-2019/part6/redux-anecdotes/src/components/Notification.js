@@ -8,7 +8,14 @@ const Notification = props => {
   };
 
   return (
-    <div style={style}>{props.store.getState().notifications.message}</div>
+    <div
+      style={{
+        ...style,
+        display: props.store.getState().notifications.display
+      }}
+    >
+      {props.store.getState().notifications.message}
+    </div>
   );
 };
 
