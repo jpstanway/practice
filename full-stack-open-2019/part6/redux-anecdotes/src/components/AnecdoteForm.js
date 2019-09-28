@@ -1,4 +1,6 @@
 import React from "react";
+import { connect } from "react-redux";
+
 import { createAnecdote } from "../reducers/anecdoteReducer";
 import {
   setNotification,
@@ -9,11 +11,11 @@ const AnecdoteForm = props => {
   const addAnecdote = event => {
     event.preventDefault();
     const content = event.target.anecdote.value;
-    props.store.dispatch(createAnecdote(content));
-    props.store.dispatch(setNotification("anecdote created!"));
+    props.createAnecdote(content);
+    props.setNotification("anecdote created!");
 
     setTimeout(() => {
-      return props.store.dispatch(removeNotification());
+      return props.removeNotification();
     }, 5000);
 
     event.target.anecdote.value = "";
@@ -30,4 +32,7 @@ const AnecdoteForm = props => {
   );
 };
 
-export default AnecdoteForm;
+export default connect(
+  null,
+  { createAnecdote, setNotification, removeNotification }
+)(AnecdoteForm);
