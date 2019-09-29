@@ -7,9 +7,9 @@ import {
 } from "../reducers/notificationReducer";
 
 const AnecdoteList = props => {
-  const handleVote = ({ id, content }) => {
-    props.vote(id);
-    props.setNotification(`you voted for "${content}"`);
+  const handleVote = anecdote => {
+    props.vote(anecdote);
+    props.setNotification(`you voted for "${anecdote.content}"`);
 
     setTimeout(() => {
       return props.removeNotification();
