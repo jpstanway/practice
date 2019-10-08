@@ -37,7 +37,9 @@ const Authors = ({ show, result }) => {
         </tbody>
       </table>
       <Mutation mutation={SET_BORN} refetchQueries={[{ query: ALL_AUTHORS }]}>
-        {editAuthor => <UpdateAuthor editAuthor={editAuthor} />}
+        {editAuthor => (
+          <UpdateAuthor authors={authors} editAuthor={editAuthor} />
+        )}
       </Mutation>
     </div>
   );
