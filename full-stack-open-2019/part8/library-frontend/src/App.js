@@ -1,50 +1,12 @@
 import React, { useState } from "react";
 import { Query, Mutation } from "react-apollo";
-import { gql } from "apollo-boost";
+
+import { ALL_AUTHORS, ALL_BOOKS } from "./graphql/queries";
+import { NEW_BOOK } from "./graphql/mutations";
 
 import Authors from "./components/Authors";
 import Books from "./components/Books";
 import NewBook from "./components/NewBook";
-
-const ALL_AUTHORS = gql`
-  query {
-    allAuthors {
-      name
-      born
-      bookCount
-    }
-  }
-`;
-
-const ALL_BOOKS = gql`
-  query {
-    allBooks {
-      title
-      author
-      published
-    }
-  }
-`;
-
-const NEW_BOOK = gql`
-  mutation newBook(
-    $title: String!
-    $author: String!
-    $published: Int!
-    $genres: [String!]!
-  ) {
-    addBook(
-      title: $title
-      author: $author
-      published: $published
-      genres: $genres
-    ) {
-      title
-      author
-      published
-    }
-  }
-`;
 
 const App = () => {
   const [page, setPage] = useState("authors");

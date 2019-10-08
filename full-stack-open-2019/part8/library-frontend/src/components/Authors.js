@@ -1,4 +1,10 @@
 import React from "react";
+import { Mutation } from "react-apollo";
+
+import UpdateAuthor from "./UpdateAuthor";
+
+import { ALL_AUTHORS } from "../graphql/queries";
+import { SET_BORN } from "../graphql/mutations";
 
 const Authors = ({ show, result }) => {
   if (!show) {
@@ -30,6 +36,9 @@ const Authors = ({ show, result }) => {
           ))}
         </tbody>
       </table>
+      <Mutation mutation={SET_BORN} refetchQueries={[{ query: ALL_AUTHORS }]}>
+        {editAuthor => <UpdateAuthor editAuthor={editAuthor} />}
+      </Mutation>
     </div>
   );
 };
