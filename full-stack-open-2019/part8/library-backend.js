@@ -1,10 +1,14 @@
 require("dotenv").config();
 const { ApolloServer, gql, UserInputError } = require("apollo-server");
+const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const Book = require("./models/Book");
 const Author = require("./models/Author");
+const User = require("./models/User");
 
 const MONGO_URI = process.env.MONGO_URI;
+const USER_PASSWORD = process.env.USER_PASSWORD;
+const JWT_SECRET = process.env.SECRET;
 
 console.log("connecting to database");
 
@@ -104,6 +108,7 @@ const typeDefs = gql`
     authorCount: Int!
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
+    me: User
   }
 
   type Mutation {
@@ -114,6 +119,8 @@ const typeDefs = gql`
       genres: [String!]!
     ): Book
     editAuthor(name: String!, setBornTo: Int!): Author
+    createUser(username: String!, favoriteGenre: String!): User
+    login(username: String!, password: String!): Token
   }
 
   type Book {
@@ -129,6 +136,16 @@ const typeDefs = gql`
     born: Int
     bookCount: Int!
     id: ID!
+  }
+
+  type User {
+    username: String!
+    favoriteGenre: String!
+    id: ID!
+  }
+
+  type Token {
+    value: String!
   }
 `;
 
@@ -152,10 +169,19 @@ const resolvers = {
         return await Book.find({});
       }
     },
-    allAuthors: () => Author.find({})
+    allAuthors: () => Author.find({}),
+    me: (root, args, context) => {
+      return context.currentUser;
+    }
   },
   Mutation: {
-    addBook: async (root, args) => {
+    addBook: async (root, args, context) => {
+      if (!context.currentUser) {
+        throw new UserInputError(
+          "you must be logged in to complete this action"
+        );
+      }
+
       try {
         // find if author exists in db
         let author = await Author.findOne({ name: args.author });
@@ -176,7 +202,13 @@ const resolvers = {
         throw new UserInputError(error.message, { invalidArgs: args });
       }
     },
-    editAuthor: async (root, args) => {
+    editAuthor: async (root, args, context) => {
+      if (!context.currentUser) {
+        throw new UserInputError(
+          "you must be logged in to complete this action"
+        );
+      }
+
       const updateObject = { born: args.setBornTo };
 
       try {
@@ -190,6 +222,32 @@ const resolvers = {
       } catch (error) {
         throw new UserInputError(error.message, { invalidArgs: args });
       }
+    },
+    createUser: async (root, args) => {
+      const user = new User({
+        username: args.username,
+        favoriteGenre: args.favoriteGenre
+      });
+
+      try {
+        return await user.save();
+      } catch (error) {
+        throw new UserInputError(error.message, { invalidArgs: args });
+      }
+    },
+    login: async (root, args) => {
+      const user = await User.findOne({ username: args.username });
+
+      if (!user || args.password !== USER_PASSWORD) {
+        throw new UserInputError("wrong credentials");
+      }
+
+      const userTokenData = {
+        username: user.username,
+        id: user._id
+      };
+
+      return { value: `bearer ${jwt.sign(userTokenData, JWT_SECRET)}` };
     }
   },
   Author: {
@@ -202,7 +260,15 @@ const resolvers = {
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
+  context: async ({ req }) => {
+    const auth = req ? req.headers.authorization : null;
+    if (auth && auth.toLowerCase().startsWith("bearer ")) {
+      const decodedToken = jwt.verify(auth.substring(7), JWT_SECRET);
+      const currentUser = await User.findById(decodedToken.id);
+      return { currentUser };
+    }
+  }
 });
 
 server.listen().then(({ url }) => {
