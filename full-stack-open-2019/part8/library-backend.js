@@ -253,7 +253,7 @@ const resolvers = {
         id: user._id
       };
 
-      return { value: `bearer ${jwt.sign(userTokenData, JWT_SECRET)}` };
+      return { value: jwt.sign(userTokenData, JWT_SECRET) };
     }
   },
   Author: {
