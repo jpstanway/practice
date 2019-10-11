@@ -1,5 +1,6 @@
 require("dotenv").config();
-const { ApolloServer, gql, UserInputError } = require("apollo-server");
+const { ApolloServer, gql, UserInputError, PubSub } = require("apollo-server");
+const pubsub = new PubSub();
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const Book = require("./models/Book");
@@ -16,90 +17,6 @@ mongoose
   .connect(MONGO_URI, { useNewUrlParser: true })
   .then(() => console.log("connected to MongoDB"))
   .catch(error => console.log(error.message));
-
-// let authors = [
-//   {
-//     name: "Robert Martin",
-//     id: "afa51ab0-344d-11e9-a414-719c6709cf3e",
-//     born: 1952
-//   },
-//   {
-//     name: "Martin Fowler",
-//     id: "afa5b6f0-344d-11e9-a414-719c6709cf3e",
-//     born: 1963
-//   },
-//   {
-//     name: "Fyodor Dostoevsky",
-//     id: "afa5b6f1-344d-11e9-a414-719c6709cf3e",
-//     born: 1821
-//   },
-//   {
-//     name: "Joshua Kerievsky", // birthyear not known
-//     id: "afa5b6f2-344d-11e9-a414-719c6709cf3e"
-//   },
-//   {
-//     name: "Sandi Metz", // birthyear not known
-//     id: "afa5b6f3-344d-11e9-a414-719c6709cf3e"
-//   }
-// ];
-
-// /*
-//  * It would be more sensible to assosiate book and the author by saving
-//  * the author id instead of the name to the book.
-//  * For simplicity we however save the author name.
-//  */
-
-// let books = [
-//   {
-//     title: "Clean Code",
-//     published: 2008,
-//     author: "Robert Martin",
-//     id: "afa5b6f4-344d-11e9-a414-719c6709cf3e",
-//     genres: ["refactoring"]
-//   },
-//   {
-//     title: "Agile software development",
-//     published: 2002,
-//     author: "Robert Martin",
-//     id: "afa5b6f5-344d-11e9-a414-719c6709cf3e",
-//     genres: ["agile", "patterns", "design"]
-//   },
-//   {
-//     title: "Refactoring, edition 2",
-//     published: 2018,
-//     author: "Martin Fowler",
-//     id: "afa5de00-344d-11e9-a414-719c6709cf3e",
-//     genres: ["refactoring"]
-//   },
-//   {
-//     title: "Refactoring to patterns",
-//     published: 2008,
-//     author: "Joshua Kerievsky",
-//     id: "afa5de01-344d-11e9-a414-719c6709cf3e",
-//     genres: ["refactoring", "patterns"]
-//   },
-//   {
-//     title: "Practical Object-Oriented Design, An Agile Primer Using Ruby",
-//     published: 2012,
-//     author: "Sandi Metz",
-//     id: "afa5de02-344d-11e9-a414-719c6709cf3e",
-//     genres: ["refactoring", "design"]
-//   },
-//   {
-//     title: "Crime and punishment",
-//     published: 1866,
-//     author: "Fyodor Dostoevsky",
-//     id: "afa5de03-344d-11e9-a414-719c6709cf3e",
-//     genres: ["classic", "crime"]
-//   },
-//   {
-//     title: "The Demon",
-//     published: 1872,
-//     author: "Fyodor Dostoevsky",
-//     id: "afa5de04-344d-11e9-a414-719c6709cf3e",
-//     genres: ["classic", "revolution"]
-//   }
-// ];
 
 const typeDefs = gql`
   type Query {
@@ -121,6 +38,10 @@ const typeDefs = gql`
     editAuthor(name: String!, setBornTo: Int!): Author
     createUser(username: String!, favoriteGenre: String!): User
     login(username: String!, password: String!): Token
+  }
+
+  type Subscription {
+    bookAdded: Book!
   }
 
   type Book {
@@ -175,7 +96,10 @@ const resolvers = {
         return await Book.find({}).populate("author");
       }
     },
-    allAuthors: () => Author.find({}),
+    allAuthors: () => {
+      console.log("Author.find");
+      return Author.find({});
+    },
     me: (root, args, context) => {
       return context.currentUser;
     }
@@ -201,8 +125,9 @@ const resolvers = {
         // construct new book
         const book = new Book({ ...args, author: author._id });
 
-        // save new book to database
+        pubsub.publish("BOOK_ADDED", { bookAdded: book });
 
+        // save new book to database
         return await book.save();
       } catch (error) {
         throw new UserInputError(error.message, { invalidArgs: args });
@@ -256,6 +181,11 @@ const resolvers = {
       return { value: jwt.sign(userTokenData, JWT_SECRET) };
     }
   },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(["BOOK_ADDED"])
+    }
+  },
   Author: {
     bookCount: async root => {
       const books = await Book.find({ author: root._id });
@@ -277,6 +207,7 @@ const server = new ApolloServer({
   }
 });
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`);
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`);
 });

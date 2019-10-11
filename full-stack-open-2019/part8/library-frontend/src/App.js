@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Query, Mutation } from "react-apollo";
-import { useApolloClient, useQuery } from "@apollo/react-hooks";
+import {
+  useApolloClient,
+  useQuery,
+  useSubscription
+} from "@apollo/react-hooks";
 
 import { ALL_AUTHORS, ALL_BOOKS, CURRENT_USER } from "./graphql/queries";
 import { NEW_BOOK, LOGIN } from "./graphql/mutations";
+import { BOOK_ADDED } from "./graphql/subscriptions";
 
 import Authors from "./components/Authors";
 import Books from "./components/Books";
@@ -22,6 +27,12 @@ const App = () => {
       setToken(token);
     }
   }, []);
+
+  useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      window.alert("New book added!", subscriptionData);
+    }
+  });
 
   const client = useApolloClient();
 
