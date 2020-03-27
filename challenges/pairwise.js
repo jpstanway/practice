@@ -1,21 +1,31 @@
 function pairwise(arr, arg) {
   let sumOfIndices = 0;
-  const usedIndices = [];
+  const items = {};
 
   for (let i = 0; i < arr.length; i++) {
-    for (let j = 0; j < arr.length; j++) {
-      if (arr[i] + arr[j] === arg) {
-        // first check if indices have been used already
-        if (usedIndices.includes(i) || usedIndices.includes(j) || i === j) {
-          continue;
-        } else {
-          sumOfIndices += i + j;
-          usedIndices.push(i, j);
-        }
+    let newItem = { indices: [i], used: false };
+    let diff = arg - arr[i];
+
+    // if difference exists, add up indices
+    if (items[diff] && !items[diff].used) {
+      sumOfIndices += i + items[diff].indices[0];
+      items[diff].indices.shift();
+
+      // when item has no more indices, set used to true
+      if (items[diff].indices.length === 0) {
+        items[diff].used = true;
       }
+      newItem.used = true;
+    }
+
+    // if item already exists, add to indices array
+    if (items[arr[i]]) {
+      items[arr[i]].indices.push(i);
+    } else {
+      items[arr[i]] = newItem;
     }
   }
   return sumOfIndices;
 }
 
-pairwise([1, 3, 2, 4], 4);
+pairwise([1, 4, 2, 3, 0, 5], 7);
