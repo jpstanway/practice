@@ -6,7 +6,7 @@ function quickSort(array, l = 0, r = array.length - 1) {
     quickSort(array, l, pos - 1);
     quickSort(array, pos + 1, r);
   }
-  console.log(array);
+
   // change code above this line
   return array;
 }
