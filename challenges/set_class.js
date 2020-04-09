@@ -39,4 +39,18 @@ function Set() {
     set2.values().forEach(addElementsToSet);
     return setUnion;
   };
+  // this method creates a new set of common values between 2 sets
+  this.intersection = function (set2) {
+    const setIntersection = new Set();
+    const addToIntersection = (element) => {
+      if (this.has(element) && set2.has(element)) {
+        return setIntersection.add(element);
+      }
+      return false;
+    };
+
+    this.values().forEach(addToIntersection);
+    set2.values().forEach(addToIntersection);
+    return setIntersection;
+  };
 }
