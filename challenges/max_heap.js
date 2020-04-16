@@ -8,16 +8,25 @@ var MaxHeap = function () {
   this.insert = function (element) {
     this.heap.push(element);
 
-    let elementIndex = this.heap.indexOf(element);
-    let parentIndex = Math.floor((elementIndex - 1) / 2);
-    let parent = this.heap[parentIndex];
+    let elementIndex = this.heap.length - 1;
 
-    if (parent && element > parent) {
-      this.heap[parentIndex] = element;
-      this.heap[elementIndex] = parent;
+    while (true) {
+      let parentIndex = Math.floor((elementIndex - 1) / 2);
+      let parent = this.heap[parentIndex];
+
+      if (parent && element > parent) {
+        // if element has a parent
+        // and element is less than its parent
+        // perform the swap
+        this.heap[parentIndex] = element;
+        this.heap[elementIndex] = parent;
+        elementIndex = parentIndex;
+      } else {
+        // otherwise, exit the loop/function
+        console.log("inserted " + element, this.heap);
+        return this.heap;
+      }
     }
-
-    return this.heap;
   };
 
   this.remove = function () {
