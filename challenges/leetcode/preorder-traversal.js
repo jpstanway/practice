@@ -22,3 +22,29 @@
   
   return values;
 };
+
+var inorderTraversal = function(root, vals = []) {
+  let node = root;
+  let values = vals;
+
+  if (!node?.val) return values;
+  
+  inorderTraversal(node.left, values);
+  values.push(node.val);
+  inorderTraversal(node.right, values);
+  
+  return values;
+};
+
+var postorderTraversal = function(root, vals = []) {
+  let node = root;
+  let values = vals;
+
+  if (!node?.val) return values;
+  
+  postorderTraversal(node.left, values);
+  postorderTraversal(node.right, values);
+  values.push(node.val);
+  
+  return values;
+};
