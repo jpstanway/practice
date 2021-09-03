@@ -48,3 +48,27 @@ var postorderTraversal = function(root, vals = []) {
   
   return values;
 };
+
+var levelOrderTraversal = function(root, queue = [], vals = []) {
+  const values = vals;
+  const nextQueue = [];
+
+  if (root) queue.push(root);
+  if (!queue.length) return values;
+  
+  const level = queue.map((item) => item.val);
+
+  values.push(level);
+  
+  for (let i = 0; i < queue.length; i++) {
+      const node = queue[i];
+      if (node.left) {
+          nextQueue.push(node.left);
+      }
+      if (node.right) {
+          nextQueue.push(node.right);
+      }
+  }
+  
+  return levelOrderTraversal(null, nextQueue, values);
+};
