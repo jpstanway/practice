@@ -1,9 +1,14 @@
-import { useState } from 'react';
-import './App.css';
+import { Container } from "react-bootstrap";
+import { OrderDetailsProvider } from "./contexts/OrderDetails";
+import OrderEntry from "./pages/entry/OrderEntry";
 
 function App() {
   return (
-   <div />
+    <Container>
+      <OrderDetailsProvider>
+        <OrderEntry />
+      </OrderDetailsProvider>
+    </Container>
   );
 }
 
