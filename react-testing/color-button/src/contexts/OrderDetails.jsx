@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { pricePerItem } from "../constants";
+import { formatCurrency } from "../utilities";
 
 const OrderDetails = createContext();
 
@@ -13,14 +14,6 @@ export function useOrderDetails() {
   }
 
   return context;
-}
-
-function formatCurrency(amount) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(amount);
 }
 
 function calculateSubtotal(optionType, optionCounts) {
@@ -54,7 +47,7 @@ export function OrderDetailsProvider(props) {
       toppings: formatCurrency(toppingsSubtotal),
       grandTotal: formatCurrency(grandTotal),
     });
-  }, [optionCounts, totals]);
+  }, [optionCounts]);
 
   const value = useMemo(() => {
     function updateItemCount(itemName, newItemCount, optionType) {
@@ -66,7 +59,7 @@ export function OrderDetailsProvider(props) {
       setOptionCounts(newOptionCounts);
     }
 
-    return [{ ...optionCounts }, updateItemCount];
+    return [{ ...optionCounts, totals }, updateItemCount];
   }, [optionCounts]);
 
   return <OrderDetails.Provider value={value} {...props} />;
