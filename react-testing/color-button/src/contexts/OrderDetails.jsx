@@ -60,7 +60,7 @@ export function OrderDetailsProvider(props) {
     }
 
     return [{ ...optionCounts, totals }, updateItemCount];
-  }, [optionCounts]);
+  }, [optionCounts, totals]);
 
   return <OrderDetails.Provider value={value} {...props} />;
 }
